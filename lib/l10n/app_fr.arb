@@ -1,0 +1,22 @@
+{
+    "@@locale": "fr",
+    "appTitle": "Causeries",
+    "welcomeMessage": "Bienvenue, {name}!",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter",
+    "settings": "Paramètres",
+    "language": "Langue",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "confirmDelete": "Voulez-vous vraiment supprimer {item} ?",
+    "loading": "Chargement...",
+    "error": "Une erreur inattendue est survenue",
+    "networkError": "Erreur réseau. Veuillez vérifier votre connexion.",
+    "noData": "C'est très calme ici...",
+    "retry": "Réessayer",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "invalidEmail": "Veuillez saisir une adresse e-mail valide",
+    "passwordTooShort": "Le mot de passe doit comporter au moins {min} caractères"
+}

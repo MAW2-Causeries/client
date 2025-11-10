@@ -1,0 +1,94 @@
+{
+    "@@locale": "en",
+    "appTitle": "Causeries",
+    "@appTitle": {
+        "description": "Application title shown in the app bar"
+    },
+    "welcomeMessage": "Welcome, {name}!",
+    "@welcomeMessage": {
+        "description": "Welcome message",
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "signIn": "Sign in",
+    "@signIn": {
+        "description": "Label for sign in action"
+    },
+    "signOut": "Sign out",
+    "@signOut": {
+        "description": "Label for sign out action"
+    },
+    "settings": "Settings",
+    "@settings": {
+        "description": "Label for settings screen"
+    },
+    "language": "Language",
+    "@language": {
+        "description": "Label for language selection"
+    },
+    "cancel": "Cancel",
+    "@cancel": {
+        "description": "Cancel button label"
+    },
+    "save": "Save",
+    "@save": {
+        "description": "Save button label"
+    },
+    "delete": "Delete",
+    "@delete": {
+        "description": "Delete action label"
+    },
+    "confirmDelete": "Are you sure you want to delete {item}?",
+    "@confirmDelete": {
+        "description": "Confirmation prompt for deletion",
+        "placeholders": {
+            "item": {
+                "type": "String"
+            }
+        }
+    },
+    "loading": "Loading...",
+    "@loading": {
+        "description": "Loading indicator text"
+    },
+    "error": "An unexpected error occurred",
+    "@error": {
+        "description": "Generic error message"
+    },
+    "networkError": "Network error. Please check your connection.",
+    "@networkError": {
+        "description": "Network-related error message"
+    },
+    "noData": "It's very quiet here...",
+    "@noData": {
+        "description": "Displayed when a list or page has no data"
+    },
+    "retry": "Retry",
+    "@retry": {
+        "description": "Retry action label"
+    },
+    "email": "Email",
+    "@email": {
+        "description": "Label for email field"
+    },
+    "password": "Password",
+    "@password": {
+        "description": "Label for password field"
+    },
+    "invalidEmail": "Please enter a valid email address",
+    "@invalidEmail": {
+        "description": "Validation message for invalid email"
+    },
+    "passwordTooShort": "Password must be at least {min} characters",
+    "@passwordTooShort": {
+        "description": "Validation message for short password",
+        "placeholders": {
+            "min": {
+                "type": "int"
+            }
+        }
+    }
+}
