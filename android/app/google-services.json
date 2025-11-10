@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "964711021125",
+    "project_id": "causeries-f0db0",
+    "storage_bucket": "causeries-f0db0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964711021125:android:43d70e508164c099a7c12c",
+        "android_client_info": {
+          "package_name": "com.causeries.client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZ0pST4487TOsQ-TtEt11gMoDNpyaZn-A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964711021125:android:a4037908d7c7e009a7c12c",
+        "android_client_info": {
+          "package_name": "com.example.causeries_client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZ0pST4487TOsQ-TtEt11gMoDNpyaZn-A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
