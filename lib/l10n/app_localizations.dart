@@ -210,7 +210,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Password must be at least {min} characters'**
-  String passwordTooShort(int min);
+  String invalidPassword(int min);
 }
 
 class _AppLocalizationsDelegate

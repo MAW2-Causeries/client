@@ -18,5 +18,5 @@
     "email": "E-mail",
     "password": "Mot de passe",
     "invalidEmail": "Veuillez saisir une adresse e-mail valide",
-    "passwordTooShort": "Le mot de passe doit comporter au moins {min} caractères"
+    "invalidPassword": "Le mot de passe doit comporter au moins {min} caractères"
 }

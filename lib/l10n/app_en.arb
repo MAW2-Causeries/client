@@ -82,8 +82,8 @@
     "@invalidEmail": {
         "description": "Validation message for invalid email"
     },
-    "passwordTooShort": "Password must be at least {min} characters",
-    "@passwordTooShort": {
+    "invalidPassword": "Password must be at least {min} characters",
+    "@invalidPassword": {
         "description": "Validation message for short password",
         "placeholders": {
             "min": {

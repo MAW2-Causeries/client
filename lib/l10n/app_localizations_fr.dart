@@ -68,7 +68,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get invalidEmail => 'Veuillez saisir une adresse e-mail valide';
 
   @override
-  String passwordTooShort(int min) {
+  String invalidPassword(int min) {
     return 'Le mot de passe doit comporter au moins $min caractères';
   }
 }
