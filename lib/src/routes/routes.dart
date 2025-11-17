@@ -5,6 +5,7 @@ class Routes {
   static const String login = '/login';
 
   static final Map<String, WidgetBuilder> routes = {
+    // auth: (context) => const AuthScreen(),
     login: (context) => const LoginScreen(),
   };
 }
