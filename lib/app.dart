@@ -10,7 +10,7 @@ class Causeries extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Causeries',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.theme,
       initialRoute: Routes.login,
       routes: Routes.routes,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
