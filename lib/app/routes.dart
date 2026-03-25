@@ -1,4 +1,4 @@
-import 'package:causeries_client/features/authentication/presentation/screens/login_screen.dart';
+import 'package:causeries_client/features/authentication/presentation/views/login_screen.dart';
 import 'package:flutter/widgets.dart';
 
 class Routes {
