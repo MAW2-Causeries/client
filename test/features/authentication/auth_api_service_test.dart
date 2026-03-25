@@ -65,6 +65,49 @@ void main() {
       });
     });
 
+    group('register', () {
+      test('posts to /users with email, username, and password', () async {
+        when(
+          mockApiClient.post(
+            '/users',
+            body: {
+              'email': 'test@example.com',
+              'username': 'tester',
+              'password': 'password123',
+            },
+          ),
+        ).thenAnswer((_) async => <String, dynamic>{});
+
+        await authApiService.register(
+          'test@example.com',
+          'tester',
+          'password123',
+        );
+
+        verify(
+          mockApiClient.post(
+            '/users',
+            body: {
+              'email': 'test@example.com',
+              'username': 'tester',
+              'password': 'password123',
+            },
+          ),
+        ).called(1);
+      });
+
+      test('throws UserAlreadyExistsException on 403 status', () async {
+        when(
+          mockApiClient.post('/users', body: anyNamed('body')),
+        ).thenThrow(ApiException(statusCode: 403, message: 'Forbidden'));
+
+        expect(
+          () => authApiService.register('test@example.com', 'tester', 'pass'),
+          throwsA(isA<UserAlreadyExistsException>()),
+        );
+      });
+    });
+
     group('logout', () {
       test('calls delete on /sessions endpoint', () async {
         when(mockApiClient.delete('/sessions')).thenAnswer((_) async {});
