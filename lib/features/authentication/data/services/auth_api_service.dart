@@ -6,9 +6,9 @@ class AuthApiService {
 
   AuthApiService(this.client);
 
-  Future<Map<String, dynamic>> login(String email, String password) {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
-      final response = client.post(
+      final response = await client.post(
         '/sessions',
         body: {'email': email, 'password': password},
       );
@@ -18,6 +18,22 @@ class AuthApiService {
       switch (e.statusCode) {
         case 401:
           throw InvalidCredentialsException();
+        default:
+          rethrow;
+      }
+    }
+  }
+
+  Future<void> register(String email, String username, String password) async {
+    try {
+      await client.post(
+        '/users',
+        body: {'email': email, 'username': username, 'password': password},
+      );
+    } on ApiException catch (e) {
+      switch (e.statusCode) {
+        case 403:
+          throw UserAlreadyExistsException();
         default:
           rethrow;
       }

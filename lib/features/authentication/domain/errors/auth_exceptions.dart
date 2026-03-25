@@ -5,6 +5,11 @@ class InvalidCredentialsException extends AuthExceptions {
   String toString() => 'Invalid email or password.';
 }
 
+class UserAlreadyExistsException extends AuthExceptions {
+  @override
+  String toString() => 'Email or username already in use.';
+}
+
 class NetworkException extends AuthExceptions {
   @override
   String toString() => 'Network error. Please check your connection.';

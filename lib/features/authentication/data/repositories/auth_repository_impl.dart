@@ -22,6 +22,11 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
+  Future<void> register(String email, String username, String password) {
+    return apiService.register(email, username, password);
+  }
+
+  @override
   Future<void> logout() async {
     await apiService.logout();
 
