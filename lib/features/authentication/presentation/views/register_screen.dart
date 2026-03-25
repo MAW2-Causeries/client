@@ -1,12 +1,11 @@
-import 'package:causeries_client/core/widgets/layout.dart';
 import 'package:causeries_client/app/routes.dart';
+import 'package:causeries_client/core/widgets/layout.dart';
+import 'package:causeries_client/features/authentication/presentation/viewmodels/register_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:causeries_client/features/authentication/presentation/viewmodels/login_view_model.dart';
-
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatelessWidget {
+  const RegisterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +15,29 @@ class LoginScreen extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
-            child: Consumer<LoginViewModel>(
+            child: Consumer<RegisterViewModel>(
               builder: (context, viewModel, _) {
                 return Form(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Sign in',
+                        'Create account',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 16),
                       TextFormField(
+                        decoration: const InputDecoration(
+                          labelText: 'Username',
+                        ),
+                        textInputAction: TextInputAction.next,
+                        onChanged: viewModel.setUsername,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
                         decoration: const InputDecoration(labelText: 'Email'),
                         keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
                         onChanged: viewModel.setEmail,
                       ),
                       const SizedBox(height: 12),
@@ -38,6 +46,7 @@ class LoginScreen extends StatelessWidget {
                           labelText: 'Password',
                         ),
                         obscureText: true,
+                        textInputAction: TextInputAction.done,
                         onChanged: viewModel.setPassword,
                       ),
                       if (viewModel.errorMessage != null) ...[
@@ -56,14 +65,25 @@ class LoginScreen extends StatelessWidget {
                           onPressed: viewModel.isLoading
                               ? null
                               : () async {
-                                  final success = await viewModel.login();
+                                  final success = await viewModel.register();
                                   if (!context.mounted) return;
+
                                   if (success) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text('Logged in successfully'),
+                                        content: Text(
+                                          'Account created. Please sign in.',
+                                        ),
                                       ),
                                     );
+
+                                    if (Navigator.of(context).canPop()) {
+                                      Navigator.of(context).pop();
+                                    } else {
+                                      Navigator.of(
+                                        context,
+                                      ).pushReplacementNamed(Routes.login);
+                                    }
                                   }
                                 },
                           child: viewModel.isLoading
@@ -74,15 +94,21 @@ class LoginScreen extends StatelessWidget {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Text('Login'),
+                              : const Text('Create account'),
                         ),
                       ),
                       const SizedBox(height: 12),
                       TextButton(
                         onPressed: () {
-                          Navigator.of(context).pushNamed(Routes.register);
+                          if (Navigator.of(context).canPop()) {
+                            Navigator.of(context).pop();
+                          } else {
+                            Navigator.of(
+                              context,
+                            ).pushReplacementNamed(Routes.login);
+                          }
                         },
-                        child: const Text('Create account'),
+                        child: const Text('Back to login'),
                       ),
                     ],
                   ),

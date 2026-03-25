@@ -3,6 +3,7 @@ import 'package:causeries_client/core/storage/token_storage.dart';
 import 'package:causeries_client/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:causeries_client/features/authentication/data/services/auth_api_service.dart';
 import 'package:causeries_client/features/authentication/presentation/viewmodels/login_view_model.dart';
+import 'package:causeries_client/features/authentication/presentation/viewmodels/register_view_model.dart';
 import 'package:causeries_client/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/widgets.dart';
@@ -17,10 +18,6 @@ final List<SingleChildWidget> appProviders = [
     dispose: (_, client) => client.close(),
   ),
 
-  ProxyProvider<ApiClient, AuthApiService>(
-    update: (_, apiClient, __) => AuthApiService(apiClient),
-  ),
-
   Provider<TokenStorage>(create: (_) => TokenStorage.instance),
 
   ProxyProvider2<http.Client, TokenStorage, ApiClient>(
@@ -29,6 +26,10 @@ final List<SingleChildWidget> appProviders = [
       tokenStorage: tokenStorage,
       baseUrl: _defaultApiBaseUrl,
     ),
+  ),
+
+  ProxyProvider<ApiClient, AuthApiService>(
+    update: (_, apiClient, __) => AuthApiService(apiClient),
   ),
 
   ProxyProvider2<AuthApiService, TokenStorage, AuthRepository>(
@@ -41,6 +42,12 @@ final List<SingleChildWidget> appProviders = [
     update: (_, authRepository, viewModel) =>
         viewModel ?? LoginViewModel(authRepository),
   ),
+
+  ChangeNotifierProxyProvider<AuthRepository, RegisterViewModel>(
+    create: (context) => RegisterViewModel(context.read<AuthRepository>()),
+    update: (_, authRepository, viewModel) =>
+        viewModel ?? RegisterViewModel(authRepository),
+  ),
 ];
 
 extension ProviderContext on BuildContext {
@@ -48,4 +55,5 @@ extension ProviderContext on BuildContext {
   AuthApiService get authApiService => read<AuthApiService>();
   AuthRepository get authRepository => read<AuthRepository>();
   LoginViewModel get loginViewModel => read<LoginViewModel>();
+  RegisterViewModel get registerViewModel => read<RegisterViewModel>();
 }
