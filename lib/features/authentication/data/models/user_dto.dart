@@ -15,15 +15,22 @@ class UserDto {
 
   factory UserDto.fromJson(Map<String, dynamic> json) {
     return UserDto(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      name: json['name'] as String,
-      avatarUrl: json['avatar_url'] as String,
+      id: json['user']?['id'] as String,
+      email: json['user']?['email'] as String,
+      name: json['user']?['username'] as String,
+      avatarUrl: json['user']?['profile_picture_path'] as String,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'email': email, 'name': name, 'avatar_url': avatarUrl};
+    return {
+      'user': {
+        'id': id,
+        'email': email,
+        'username': name,
+        'profile_picture_path': avatarUrl,
+      },
+    };
   }
 
   User toDomain() {

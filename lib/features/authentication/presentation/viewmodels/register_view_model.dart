@@ -72,7 +72,8 @@ class RegisterViewModel extends ChangeNotifier {
     } on ServerException {
       _errorMessage = 'Server error. Please try again later.';
       return false;
-    } catch (_) {
+    } catch (e) {
+      print(e); // Log the error for debugging
       _errorMessage = 'Unexpected error. Please try again.';
       return false;
     } finally {

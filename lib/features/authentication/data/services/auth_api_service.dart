@@ -28,7 +28,9 @@ class AuthApiService {
     try {
       await client.post(
         '/users',
-        body: {'email': email, 'username': username, 'password': password},
+        body: {
+          'user': {'email': email, 'username': username, 'password': password},
+        },
       );
     } on ApiException catch (e) {
       switch (e.statusCode) {
@@ -37,6 +39,9 @@ class AuthApiService {
         default:
           rethrow;
       }
+    } catch (e) {
+      print(e); // Log the error for debugging
+      throw e; // Rethrow the error to be handled by the caller
     }
   }
 
