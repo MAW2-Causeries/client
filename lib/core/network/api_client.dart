@@ -27,6 +27,10 @@ class ApiClient {
     );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) {
+        return {};
+      }
+
       return jsonDecode(response.body);
     } else {
       throw ApiException(
@@ -53,6 +57,10 @@ class ApiClient {
     );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) {
+        return {};
+      }
+
       return jsonDecode(response.body);
     } else {
       throw ApiException(
@@ -79,6 +87,10 @@ class ApiClient {
     );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) {
+        return {};
+      }
+
       return jsonDecode(response.body);
     } else {
       throw ApiException(
