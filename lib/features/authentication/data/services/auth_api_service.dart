@@ -28,9 +28,7 @@ class AuthApiService {
     try {
       await client.post(
         '/users',
-        body: {
-          'user': {'email': email, 'username': username, 'password': password},
-        },
+        body: {'email': email, 'username': username, 'password': password},
       );
     } on ApiException catch (e) {
       switch (e.statusCode) {
