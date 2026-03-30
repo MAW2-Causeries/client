@@ -39,9 +39,8 @@ class AuthApiService {
         default:
           rethrow;
       }
-    } catch (e) {
-      print(e); // Log the error for debugging
-      throw e; // Rethrow the error to be handled by the caller
+    } catch (_) {
+      rethrow; // Rethrow the error to be handled by the caller
     }
   }
 
