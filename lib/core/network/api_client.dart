@@ -31,7 +31,13 @@ class ApiClient {
         return {};
       }
 
-      return jsonDecode(response.body);
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is Map) {
+        return decoded.cast<String, dynamic>();
+      }
+
+      return {'data': decoded}.cast<String, dynamic>();
     } else {
       throw ApiException(
         statusCode: response.statusCode,
@@ -61,7 +67,13 @@ class ApiClient {
         return {};
       }
 
-      return jsonDecode(response.body);
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is Map) {
+        return decoded.cast<String, dynamic>();
+      }
+
+      return {'data': decoded}.cast<String, dynamic>();
     } else {
       throw ApiException(
         statusCode: response.statusCode,
@@ -91,7 +103,13 @@ class ApiClient {
         return {};
       }
 
-      return jsonDecode(response.body);
+      final decoded = jsonDecode(response.body);
+
+      if (decoded is Map) {
+        return decoded.cast<String, dynamic>();
+      }
+
+      return {'data': decoded}.cast<String, dynamic>();
     } else {
       throw ApiException(
         statusCode: response.statusCode,
