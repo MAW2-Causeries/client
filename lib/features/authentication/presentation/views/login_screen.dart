@@ -64,6 +64,9 @@ class LoginScreen extends StatelessWidget {
                                         content: Text('Logged in successfully'),
                                       ),
                                     );
+                                    Navigator.of(
+                                      context,
+                                    ).pushReplacementNamed(Routes.guildHome);
                                   }
                                 },
                           child: viewModel.isLoading
