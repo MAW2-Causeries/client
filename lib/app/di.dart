@@ -1,4 +1,5 @@
 import 'package:causeries_client/core/network/api_client.dart';
+import 'package:causeries_client/core/network/realtime_client.dart';
 import 'package:causeries_client/core/storage/token_storage.dart';
 import 'package:causeries_client/features/authentication/data/repositories/auth_repository_impl.dart';
 import 'package:causeries_client/features/authentication/data/services/auth_api_service.dart';
@@ -12,6 +13,9 @@ import 'package:causeries_client/features/guilds/data/services/guilds_api_servic
 import 'package:causeries_client/features/guilds/domain/repositories/channels_repository.dart';
 import 'package:causeries_client/features/guilds/domain/repositories/guilds_repository.dart';
 import 'package:causeries_client/features/guilds/presentation/viewmodels/guild_home_view_model.dart';
+import 'package:causeries_client/features/users/data/repositories/users_repository_impl.dart';
+import 'package:causeries_client/features/users/data/services/users_api_service.dart';
+import 'package:causeries_client/features/users/domain/repositories/users_repository.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
@@ -35,6 +39,14 @@ final List<SingleChildWidget> appProviders = [
     ),
   ),
 
+  Provider<RealtimeClient>(
+    create: (context) => RealtimeClient(
+      tokenStorage: context.read<TokenStorage>(),
+      apiBaseUrl: _defaultApiBaseUrl,
+    ),
+    dispose: (_, client) => client.dispose(),
+  ),
+
   ProxyProvider<ApiClient, AuthApiService>(
     update: (_, apiClient, __) => AuthApiService(apiClient),
   ),
@@ -52,12 +64,20 @@ final List<SingleChildWidget> appProviders = [
     update: (_, apiClient, __) => ChannelsApiService(apiClient),
   ),
 
+  ProxyProvider<ApiClient, UsersApiService>(
+    update: (_, apiClient, __) => UsersApiService(apiClient),
+  ),
+
   ProxyProvider<GuildsApiService, GuildsRepository>(
     update: (_, api, __) => GuildsRepositoryImpl(api),
   ),
 
   ProxyProvider<ChannelsApiService, ChannelsRepository>(
     update: (_, api, __) => ChannelsRepositoryImpl(api),
+  ),
+
+  ProxyProvider<UsersApiService, UsersRepository>(
+    update: (_, api, __) => UsersRepositoryImpl(api),
   ),
 
   ChangeNotifierProxyProvider<GuildsRepository, GuildHomeViewModel>(
@@ -84,6 +104,7 @@ extension ProviderContext on BuildContext {
   AuthRepository get authRepository => read<AuthRepository>();
   GuildsRepository get guildsRepository => read<GuildsRepository>();
   ChannelsRepository get channelsRepository => read<ChannelsRepository>();
+  UsersRepository get usersRepository => read<UsersRepository>();
   GuildHomeViewModel get guildHomeViewModel => read<GuildHomeViewModel>();
   LoginViewModel get loginViewModel => read<LoginViewModel>();
   RegisterViewModel get registerViewModel => read<RegisterViewModel>();
