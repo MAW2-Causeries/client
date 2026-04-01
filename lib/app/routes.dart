@@ -4,7 +4,13 @@ import 'package:causeries_client/features/authentication/presentation/views/auth
 import 'package:causeries_client/features/guilds/presentation/views/channel_create_screen.dart';
 import 'package:causeries_client/features/guilds/presentation/views/guild_create_screen.dart';
 import 'package:causeries_client/features/guilds/presentation/views/guild_home_screen.dart';
+import 'package:causeries_client/features/guilds/presentation/viewmodels/channel_messages_controller.dart';
+import 'package:causeries_client/features/authentication/domain/repositories/auth_repository.dart';
+import 'package:causeries_client/features/guilds/domain/repositories/channels_repository.dart';
+import 'package:causeries_client/features/users/domain/repositories/users_repository.dart';
+import 'package:causeries_client/core/network/realtime_client.dart';
 import 'package:flutter/widgets.dart';
+import 'package:provider/provider.dart';
 
 class Routes {
   static const String boot = '/';
@@ -20,7 +26,15 @@ class Routes {
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
 
-    guildHome: (context) => const GuildHomeScreen(),
+    guildHome: (context) => ChangeNotifierProvider<ChannelMessagesController>(
+      create: (context) => ChannelMessagesController(
+        channelsRepository: context.read<ChannelsRepository>(),
+        usersRepository: context.read<UsersRepository>(),
+        authRepository: context.read<AuthRepository>(),
+        realtimeClient: context.read<RealtimeClient>(),
+      )..init(),
+      child: const GuildHomeScreen(),
+    ),
     guildCreate: (context) => const GuildCreateScreen(),
     channelCreate: (context) => const ChannelCreateScreen(),
   };

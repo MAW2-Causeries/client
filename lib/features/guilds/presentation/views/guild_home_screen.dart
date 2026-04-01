@@ -1,34 +1,19 @@
 import 'dart:async';
 
-import 'package:causeries_client/features/authentication/domain/repositories/auth_repository.dart';
 import 'package:causeries_client/features/guilds/domain/entities/channel.dart';
 import 'package:causeries_client/features/guilds/domain/entities/guild.dart';
 import 'package:causeries_client/features/guilds/domain/entities/guild_member.dart';
 import 'package:causeries_client/features/guilds/domain/repositories/channels_repository.dart';
 import 'package:causeries_client/features/guilds/domain/repositories/guilds_repository.dart';
+import 'package:causeries_client/features/guilds/presentation/models/chat_message.dart';
 import 'package:causeries_client/features/guilds/presentation/views/channel_create_screen.dart';
 import 'package:causeries_client/features/guilds/presentation/views/guild_create_screen.dart';
+import 'package:causeries_client/features/guilds/presentation/viewmodels/channel_messages_controller.dart';
 import 'package:causeries_client/features/guilds/presentation/viewmodels/guild_home_view_model.dart';
+import 'package:causeries_client/features/guilds/presentation/widgets/guild_snackbars.dart';
 import 'package:causeries_client/core/network/api_client.dart';
-import 'package:causeries_client/core/network/realtime_client.dart';
-import 'package:causeries_client/features/users/domain/repositories/users_repository.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
-
-class ChatMessage {
-  final String id;
-  final String authorId;
-  final String content;
-  final DateTime createdAt;
-
-  const ChatMessage({
-    required this.id,
-    required this.authorId,
-    required this.content,
-    required this.createdAt,
-  });
-}
 
 class GuildHomeScreen extends StatefulWidget {
   const GuildHomeScreen({super.key});
@@ -39,19 +24,9 @@ class GuildHomeScreen extends StatefulWidget {
 
 class _GuildHomeScreenState extends State<GuildHomeScreen> {
   final TextEditingController _composerController = TextEditingController();
-
-  final Map<String, List<ChatMessage>> _messagesByChannelId = {};
   final Set<String> _deletingChannelIds = {};
   final Set<String> _deletingGuildIds = {};
-  final Set<String> _loadingMessageChannelIds = {};
-
-  final Map<String, String> _usernameByUserId = {'system': 'System'};
-  final Set<String> _loadingUserIds = {};
-
-  String? _currentUserId;
   String? _lastAutoLoadedChannelId;
-
-  StreamSubscription<Map<String, dynamic>>? _realtimeSub;
 
   bool _isMobilePlatform(BuildContext context) {
     final platform = Theme.of(context).platform;
@@ -64,188 +39,13 @@ class _GuildHomeScreenState extends State<GuildHomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       context.read<GuildHomeViewModel>().init();
-      unawaited(_loadCurrentUserId());
-      unawaited(_subscribeRealtime());
     });
-  }
-
-  Future<void> _loadCurrentUserId() async {
-    try {
-      final user = await context.read<AuthRepository>().getCurrentUser();
-      if (!mounted) return;
-      setState(() => _currentUserId = user?.id);
-    } catch (_) {
-      // If we can't resolve the user id, we just won't filter self-authored WS messages.
-      return;
-    }
   }
 
   @override
   void dispose() {
-    final sub = _realtimeSub;
-    _realtimeSub = null;
-    if (sub != null) {
-      unawaited(sub.cancel());
-    }
     _composerController.dispose();
     super.dispose();
-  }
-
-  Future<void> _subscribeRealtime() async {
-    if (kIsWeb) return;
-    final client = context.read<RealtimeClient>();
-
-    try {
-      await client.connect();
-    } catch (_) {
-      return;
-    }
-
-    if (!mounted) return;
-    await _realtimeSub?.cancel();
-    _realtimeSub = client.stream.listen(_onRealtimeMessage);
-  }
-
-  Future<void> _loadChannelMessages(Channel channel) async {
-    if (_loadingMessageChannelIds.contains(channel.id)) return;
-
-    final channelsRepo = context.read<ChannelsRepository>();
-    final messenger = ScaffoldMessenger.of(context);
-
-    setState(() => _loadingMessageChannelIds.add(channel.id));
-    try {
-      final rows = await channelsRepo.listMessages(channel.id);
-      if (!mounted) return;
-
-      final parsed = <ChatMessage>[];
-      for (final r in rows) {
-        final deletedAt = r['deleted_at'];
-        if (deletedAt != null) continue;
-
-        final id = r['id']?.toString();
-        final authorId = r['author_id']?.toString();
-        final content = r['content']?.toString();
-        final createdAtRaw = r['created_at']?.toString();
-
-        if (id == null || id.isEmpty) continue;
-        if (content == null) continue;
-        if (createdAtRaw == null || createdAtRaw.isEmpty) continue;
-
-        DateTime createdAt;
-        try {
-          createdAt = DateTime.parse(createdAtRaw);
-        } catch (_) {
-          createdAt = DateTime.now();
-        }
-
-        if (authorId != null) {
-          unawaited(_prefetchUser(authorId));
-        }
-
-        parsed.add(
-          ChatMessage(
-            id: id,
-            authorId: authorId ?? 'unknown',
-            content: content,
-            createdAt: createdAt,
-          ),
-        );
-      }
-
-      parsed.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-      setState(() => _messagesByChannelId[channel.id] = parsed);
-    } catch (e) {
-      if (!mounted) return;
-      final msg = (e is ApiException) ? e.message : 'Failed to load messages.';
-      messenger.showSnackBar(SnackBar(content: Text(msg)));
-    } finally {
-      if (mounted) {
-        setState(() => _loadingMessageChannelIds.remove(channel.id));
-      }
-    }
-  }
-
-  void _onRealtimeMessage(Map<String, dynamic> json) {
-    final channelId = json['channel_id']?.toString();
-    final id = json['id']?.toString();
-    final authorId = json['author_id']?.toString();
-    final content = json['content']?.toString();
-    final createdAtRaw = json['created_at']?.toString();
-
-    if (channelId == null || channelId.isEmpty) return;
-    if (id == null || id.isEmpty) return;
-    if (_currentUserId != null && authorId == _currentUserId) return;
-    if (content == null) return;
-    if (createdAtRaw == null || createdAtRaw.isEmpty) return;
-
-    DateTime createdAt;
-    try {
-      createdAt = DateTime.parse(createdAtRaw);
-    } catch (_) {
-      createdAt = DateTime.now();
-    }
-
-    final msg = ChatMessage(
-      id: id,
-      authorId: authorId ?? 'unknown',
-      content: content,
-      createdAt: createdAt,
-    );
-
-    if (authorId != null) {
-      unawaited(_prefetchUser(authorId));
-    }
-
-    if (!mounted) return;
-    setState(() {
-      final existing = _messagesByChannelId[channelId] ?? const [];
-      if (existing.any((m) => m.id == id)) return;
-      _messagesByChannelId[channelId] = [...existing, msg];
-    });
-  }
-
-  List<ChatMessage> _messagesFor(Channel channel) {
-    return _messagesByChannelId.putIfAbsent(channel.id, () {
-      return [
-        ChatMessage(
-          id: 'm1_${channel.id}',
-          authorId: 'system',
-          content: 'Welcome to #${channel.name}',
-          createdAt: DateTime.now().subtract(const Duration(minutes: 12)),
-        ),
-      ];
-    });
-  }
-
-  String _authorLabel(String authorId) {
-    if (authorId == 'system') return 'System';
-    if (_currentUserId != null && authorId == _currentUserId) return 'You';
-    final cached = _usernameByUserId[authorId];
-    if (cached != null && cached.isNotEmpty) return cached;
-    if (_loadingUserIds.contains(authorId)) return '...';
-    return 'Unknown';
-  }
-
-  Future<void> _prefetchUser(String id) async {
-    if (id.isEmpty) return;
-    if (id == 'system') return;
-    if (_usernameByUserId.containsKey(id)) return;
-    if (_loadingUserIds.contains(id)) return;
-    if (_currentUserId != null && id == _currentUserId) return;
-
-    final repo = context.read<UsersRepository>();
-    setState(() => _loadingUserIds.add(id));
-    try {
-      final user = await repo.getUser(id);
-      if (!mounted) return;
-      setState(() => _usernameByUserId[id] = user.username);
-    } catch (_) {
-      return;
-    } finally {
-      if (mounted) {
-        setState(() => _loadingUserIds.remove(id));
-      }
-    }
   }
 
   Future<void> _openCreateGuild() async {
@@ -433,9 +233,7 @@ class _GuildHomeScreenState extends State<GuildHomeScreen> {
       if (!mounted) return;
 
       vm.onChannelDeleted(channel.id);
-      setState(() {
-        _messagesByChannelId.remove(channel.id);
-      });
+      context.read<ChannelMessagesController>().removeChannel(channel.id);
 
       messenger.showSnackBar(
         SnackBar(content: Text('Deleted #${channel.name}.')),
@@ -457,68 +255,17 @@ class _GuildHomeScreenState extends State<GuildHomeScreen> {
     final content = _composerController.text.trim();
     if (content.isEmpty) return;
 
-    final tempId = 'm_${DateTime.now().microsecondsSinceEpoch}';
-    final optimistic = ChatMessage(
-      id: tempId,
-      authorId: _currentUserId ?? 'you',
+    final messenger = ScaffoldMessenger.of(context);
+
+    _composerController.clear();
+
+    final err = await context.read<ChannelMessagesController>().sendMessage(
+      channel: channel,
       content: content,
-      createdAt: DateTime.now(),
     );
-
-    setState(() {
-      _messagesFor(channel).add(optimistic);
-      _composerController.clear();
-    });
-
-    try {
-      final created = await context.read<ChannelsRepository>().sendMessageRaw(
-        channelId: channel.id,
-        content: content,
-      );
-      final id = created['id']?.toString();
-      final authorId = created['author_id']?.toString();
-      final createdAtRaw = created['created_at']?.toString();
-
-      DateTime createdAt;
-      try {
-        createdAt = createdAtRaw == null
-            ? optimistic.createdAt
-            : DateTime.parse(createdAtRaw);
-      } catch (_) {
-        createdAt = optimistic.createdAt;
-      }
-
-      if (!mounted) return;
-      if (id != null && id.isNotEmpty) {
-        if (authorId != null) {
-          unawaited(_prefetchUser(authorId));
-        }
-        setState(() {
-          final list = _messagesByChannelId[channel.id] ?? const [];
-          _messagesByChannelId[channel.id] = list
-              .map(
-                (m) => m.id == tempId
-                    ? ChatMessage(
-                        id: id,
-                        authorId: authorId ?? optimistic.authorId,
-                        content: optimistic.content,
-                        createdAt: createdAt,
-                      )
-                    : m,
-              )
-              .toList();
-        });
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _messagesByChannelId[channel.id] = _messagesFor(
-          channel,
-        ).where((m) => m.id != tempId).toList();
-      });
-
-      final msg = (e is ApiException) ? e.message : 'Failed to send message.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    if (!mounted) return;
+    if (err != null) {
+      GuildSnackbars.showErrorMessenger(messenger, err);
     }
   }
 
@@ -531,12 +278,23 @@ class _GuildHomeScreenState extends State<GuildHomeScreen> {
     final members = vm.members;
     final selectedChannel = vm.selectedChannel;
 
+    final messagesController = context.read<ChannelMessagesController>();
+
     if (selectedChannel != null &&
         _lastAutoLoadedChannelId != selectedChannel.id) {
       _lastAutoLoadedChannelId = selectedChannel.id;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        unawaited(_loadChannelMessages(selectedChannel));
+        unawaited(() async {
+          final messenger = ScaffoldMessenger.of(context);
+          final err = await messagesController.loadChannelMessages(
+            selectedChannel,
+          );
+          if (!mounted) return;
+          if (err != null) {
+            GuildSnackbars.showErrorMessenger(messenger, err);
+          }
+        }());
       });
     }
 
@@ -571,31 +329,45 @@ class _GuildHomeScreenState extends State<GuildHomeScreen> {
                   onSelectChannel: (id) {
                     final ch = channels.firstWhere((c) => c.id == id);
                     vm.selectChannel(ch);
-                    unawaited(_loadChannelMessages(ch));
+                    unawaited(() async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final err = await messagesController.loadChannelMessages(
+                        ch,
+                      );
+                      if (!mounted) return;
+                      if (err != null) {
+                        GuildSnackbars.showErrorMessenger(messenger, err);
+                      }
+                    }());
                   },
                 ),
               Expanded(
-                child: _ChannelChatPane(
-                  guildName: selectedGuild?.name,
-                  channel: selectedChannel,
-                  isLoadingGuilds: vm.isLoadingGuilds,
-                  errorMessage: vm.errorMessage,
-                  onRetry: () => vm.refreshGuilds(),
-                  messages: selectedChannel == null
-                      ? const []
-                      : _messagesFor(selectedChannel),
-                  authorLabel: _authorLabel,
-                  isLoadingMessages:
-                      selectedChannel != null &&
-                      _loadingMessageChannelIds.contains(selectedChannel.id),
-                  composerController: _composerController,
-                  onSend: () => unawaited(_sendMessage()),
-                  onOpenChannelsDrawer: isWide
-                      ? null
-                      : () => Scaffold.of(scaffoldContext).openDrawer(),
-                  onOpenMembersDrawer: isWide
-                      ? null
-                      : () => Scaffold.of(scaffoldContext).openEndDrawer(),
+                child: AnimatedBuilder(
+                  animation: messagesController,
+                  builder: (context, _) {
+                    return _ChannelChatPane(
+                      guildName: selectedGuild?.name,
+                      channel: selectedChannel,
+                      isLoadingGuilds: vm.isLoadingGuilds,
+                      errorMessage: vm.errorMessage,
+                      onRetry: () => vm.refreshGuilds(),
+                      messages: selectedChannel == null
+                          ? const []
+                          : messagesController.messagesFor(selectedChannel),
+                      authorLabel: messagesController.authorLabel,
+                      isLoadingMessages:
+                          selectedChannel != null &&
+                          messagesController.isLoadingMessages(selectedChannel),
+                      composerController: _composerController,
+                      onSend: () => unawaited(_sendMessage()),
+                      onOpenChannelsDrawer: isWide
+                          ? null
+                          : () => Scaffold.of(scaffoldContext).openDrawer(),
+                      onOpenMembersDrawer: isWide
+                          ? null
+                          : () => Scaffold.of(scaffoldContext).openEndDrawer(),
+                    );
+                  },
                 ),
               ),
               if (isWide)
@@ -632,7 +404,16 @@ class _GuildHomeScreenState extends State<GuildHomeScreen> {
                   final ch = channels.firstWhere((c) => c.id == id);
                   vm.selectChannel(ch);
                   Navigator.of(context).pop();
-                  unawaited(_loadChannelMessages(ch));
+                  unawaited(() async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final err = await messagesController.loadChannelMessages(
+                      ch,
+                    );
+                    if (!mounted) return;
+                    if (err != null) {
+                      GuildSnackbars.showErrorMessenger(messenger, err);
+                    }
+                  }());
                 },
               ),
             ),
