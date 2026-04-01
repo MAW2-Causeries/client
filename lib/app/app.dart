@@ -13,7 +13,7 @@ class Causeries extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark,
-      initialRoute: Routes.login,
+      initialRoute: Routes.boot,
       routes: Routes.routes,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
