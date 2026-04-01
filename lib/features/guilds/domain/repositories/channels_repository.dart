@@ -8,4 +8,16 @@ abstract class ChannelsRepository {
   });
 
   Future<void> deleteChannel(String channelId);
+
+  Future<void> sendMessage({
+    required String channelId,
+    required String content,
+  });
+
+  Future<Map<String, dynamic>> sendMessageRaw({
+    required String channelId,
+    required String content,
+  });
+
+  Future<List<Map<String, dynamic>>> listMessages(String channelId);
 }

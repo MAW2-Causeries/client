@@ -27,4 +27,32 @@ class ChannelsRepositoryImpl implements ChannelsRepository {
   Future<void> deleteChannel(String channelId) {
     return api.deleteChannel(channelId);
   }
+
+  @override
+  Future<void> sendMessage({
+    required String channelId,
+    required String content,
+  }) async {
+    await api.sendMessage(channelId: channelId, content: content);
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendMessageRaw({
+    required String channelId,
+    required String content,
+  }) {
+    return api.sendMessage(channelId: channelId, content: content);
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> listMessages(String channelId) async {
+    final res = await api.listMessages(channelId);
+    final data = res['data'];
+    if (data is! List) return const [];
+
+    return data
+        .whereType<Map>()
+        .map((e) => e.cast<String, dynamic>())
+        .toList(growable: false);
+  }
 }

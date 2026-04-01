@@ -24,4 +24,18 @@ class ChannelsApiService {
   Future<void> deleteChannel(String channelId) {
     return client.delete('/channels/$channelId');
   }
+
+  Future<Map<String, dynamic>> sendMessage({
+    required String channelId,
+    required String content,
+  }) {
+    return client.post(
+      '/channels/$channelId/messages',
+      body: {'content': content},
+    );
+  }
+
+  Future<Map<String, dynamic>> listMessages(String channelId) {
+    return client.get('/channels/$channelId/messages');
+  }
 }
