@@ -14,12 +14,31 @@ class ApiClient {
     required this.baseUrl,
   });
 
-  Future<Map<String, dynamic>> get(String path) async {
-    Map<String, String> headers = {};
+  Future<Map<String, String>> _headers({bool json = false}) async {
+    final headers = <String, String>{};
+    if (json) headers['Content-Type'] = 'application/json';
 
     if (await tokenStorage.hasToken()) {
-      headers['Authorization'] = 'Bearer ${await tokenStorage.read()}';
+      final token = await tokenStorage.read();
+      if (token != null && token.trim().isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+      }
     }
+
+    return headers;
+  }
+
+  Map<String, dynamic> _decodeBody(String body) {
+    final decoded = jsonDecode(body);
+    if (decoded is Map) {
+      return decoded.cast<String, dynamic>();
+    }
+
+    return {'data': decoded}.cast<String, dynamic>();
+  }
+
+  Future<Map<String, dynamic>> get(String path) async {
+    final headers = await _headers();
 
     final response = await httpClient.get(
       Uri.parse('$baseUrl$path'),
@@ -31,13 +50,7 @@ class ApiClient {
         return {};
       }
 
-      final decoded = jsonDecode(response.body);
-
-      if (decoded is Map) {
-        return decoded.cast<String, dynamic>();
-      }
-
-      return {'data': decoded}.cast<String, dynamic>();
+      return _decodeBody(response.body);
     } else {
       throw ApiException(
         statusCode: response.statusCode,
@@ -50,11 +63,7 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
   }) async {
-    Map<String, String> headers = {'Content-Type': 'application/json'};
-
-    if (await tokenStorage.hasToken()) {
-      headers['Authorization'] = 'Bearer ${await tokenStorage.read()}';
-    }
+    final headers = await _headers(json: true);
 
     final response = await httpClient.post(
       Uri.parse('$baseUrl$path'),
@@ -67,13 +76,7 @@ class ApiClient {
         return {};
       }
 
-      final decoded = jsonDecode(response.body);
-
-      if (decoded is Map) {
-        return decoded.cast<String, dynamic>();
-      }
-
-      return {'data': decoded}.cast<String, dynamic>();
+      return _decodeBody(response.body);
     } else {
       throw ApiException(
         statusCode: response.statusCode,
@@ -86,11 +89,7 @@ class ApiClient {
     String path, {
     Map<String, dynamic>? body,
   }) async {
-    Map<String, String> headers = {'Content-Type': 'application/json'};
-
-    if (await tokenStorage.hasToken()) {
-      headers['Authorization'] = 'Bearer ${await tokenStorage.read()}';
-    }
+    final headers = await _headers(json: true);
 
     final response = await httpClient.put(
       Uri.parse('$baseUrl$path'),
@@ -103,13 +102,7 @@ class ApiClient {
         return {};
       }
 
-      final decoded = jsonDecode(response.body);
-
-      if (decoded is Map) {
-        return decoded.cast<String, dynamic>();
-      }
-
-      return {'data': decoded}.cast<String, dynamic>();
+      return _decodeBody(response.body);
     } else {
       throw ApiException(
         statusCode: response.statusCode,
@@ -119,11 +112,7 @@ class ApiClient {
   }
 
   Future<void> delete(String path) async {
-    Map<String, String> headers = {};
-
-    if (await tokenStorage.hasToken()) {
-      headers['Authorization'] = 'Bearer ${await tokenStorage.read()}';
-    }
+    final headers = await _headers();
 
     final response = await httpClient.delete(
       Uri.parse('$baseUrl$path'),
