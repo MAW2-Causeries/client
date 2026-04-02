@@ -1,8 +1,6 @@
 import 'package:causeries_client/features/authentication/presentation/views/login_screen.dart';
 import 'package:causeries_client/features/authentication/presentation/views/register_screen.dart';
 import 'package:causeries_client/features/authentication/presentation/views/auth_boot_screen.dart';
-import 'package:causeries_client/features/guilds/presentation/views/channel_create_screen.dart';
-import 'package:causeries_client/features/guilds/presentation/views/guild_create_screen.dart';
 import 'package:causeries_client/features/guilds/presentation/views/guild_home_screen.dart';
 import 'package:causeries_client/features/guilds/presentation/viewmodels/channel_messages_controller.dart';
 import 'package:causeries_client/features/authentication/domain/repositories/auth_repository.dart';
@@ -35,7 +33,5 @@ class Routes {
       )..init(),
       child: const GuildHomeScreen(),
     ),
-    guildCreate: (context) => const GuildCreateScreen(),
-    channelCreate: (context) => const ChannelCreateScreen(),
   };
 }

@@ -212,7 +212,6 @@ class ChannelMessagesController extends ChangeNotifier {
     unawaited(_prefetchUser(msg.authorId));
 
     final existing = _messagesByChannelId[channelId] ?? const [];
-    if (existing.any((m) => m.id == id)) return;
     _messagesByChannelId[channelId] = [...existing, msg];
     notifyListeners();
   }
