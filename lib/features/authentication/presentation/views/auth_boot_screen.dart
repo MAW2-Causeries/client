@@ -32,7 +32,6 @@ class _AuthBootScreenState extends State<AuthBootScreen> {
     }
 
     try {
-      await context.read<AuthRepository>().getCurrentUser();
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(Routes.guildHome);
     } catch (e) {
